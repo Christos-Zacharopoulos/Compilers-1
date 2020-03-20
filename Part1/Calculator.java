@@ -50,12 +50,11 @@ class Calculator {
         else if(lookaheadToken != '?'){
             throw new ParseError();
         }
-
         consume('?');
         int thenPart = Tern();
         consume(':');
         int elsePart = Tern();
-
+        
         return cond != 0 ? thenPart : elsePart;
     }
 
