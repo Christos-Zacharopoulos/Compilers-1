@@ -13,14 +13,7 @@ class Calculator {
         lookaheadToken = in.read();
     }
 
-    private void consume(int symbol) throws IOException, ParseError {
-
-        if (lookaheadToken != symbol) {
-            throw new ParseError();
-        }
-        lookaheadToken = in.read();
-    }
-
+    /// Helper functions here. \\\
     private int evalDigit(int digit){
         return digit - '0';
     }
@@ -33,36 +26,149 @@ class Calculator {
         return (lookaheadToken > '0' || lookaheadToken < '9' );
     }
 
-    private int Tern() throws IOException, ParseError {
-        if(!isDigit()) {
-            throw new ParseError();
-        }
-        int cond = evalDigit(lookaheadToken);
-        consume(lookaheadToken);
-        return TernTail(cond);
+    private boolean isOpenParenthesis(){
+        return (lookaheadToken == '(');
     }
 
-    private int TernTail(int cond) throws IOException, ParseError {
-
-        if(lookaheadToken == ':' || isEOF()) {
-            return cond;
-        }
-        else if(lookaheadToken != '?'){
-            throw new ParseError();
-        }
-        consume('?');
-        int thenPart = Tern();
-        consume(':');
-        int elsePart = Tern();
-        
-        return cond != 0 ? thenPart : elsePart;
+    private boolean isCloseParenthesis(){
+        return (lookaheadToken == ')');
     }
 
-    public int eval() throws IOException, ParseError {
-        int rv = Tern();
+    private boolean isPlus(){
+        return (lookaheadToken == '+');
+    }
+
+    private boolean isMinus(){
+        return (lookaheadToken == '-');
+    }
+
+    private boolean isOpLow(){
+        return (isPlus() || isMinus());
+    }
+
+    private boolean isMult(){
+        return (lookaheadToken == '*');
+    }
+
+    private boolean isDiv(){
+        return (lookaheadToken == '/');
+    }
+
+    private boolean isOpHigh(){
+        return (isMult() || isDiv());
+    }
+
+
+    private void throwError() throws IOException, ParseError {
+        throw new ParseError();
+    }
+
+    private void consume(int symbol) throws IOException, ParseError {
+
+        if (lookaheadToken != symbol) {
+            throwError();
+        }
+        lookaheadToken = in.read();
+    }
+
+    /// Calculator fun all the way from here. \\\
+    private float Num() throws IOException, ParseError {
+
+        float result = 0.0f;
+
+        do {
+//            int int_res = evalDigit(lookaheadToken);
+            result = (result * 10 )+ (float) evalDigit(lookaheadToken);
+            consume(lookaheadToken);
+
+        } while (isDigit());
+        return result;
+    }
+
+    private float Factor() throws IOException, ParseError {
+        if (isOpenParenthesis()) {
+            consume(lookaheadToken);
+            float exp = Exp();
+
+            if (!isCloseParenthesis())
+                throwError();
+            else {
+                consume(lookaheadToken);
+                return exp;
+            }
+        }
+
+        return Num();
+    }
+
+    private float Term1(float param) throws IOException, ParseError {
+
+        if (  isCloseParenthesis() || isEOF() || isOpLow())
+            return param;
+        else if ( !isOpHigh() )
+            throwError();
+
+
+        float result = 0.0f;
+        if (isMult()) {
+            consume(lookaheadToken);
+            result = param * Factor();
+        }
+        else if (isDiv()) {
+            consume(lookaheadToken);
+            result = param / Factor();
+        }
+
+        return Term1(result);
+    }
+
+    private float Term() throws IOException, ParseError {
+        if (!isOpenParenthesis() && !isDigit())
+            throwError();
+
+        float factor = Factor();
+
+        return Term1(factor);
+    }
+
+    private float Prod(float param) throws IOException, ParseError {
+
+        if ( isCloseParenthesis() || isEOF() )
+            return param;
+        else if ( !isOpLow() )
+            throwError();
+
+
+        float result = 0.0f;
+        if (isPlus()) {
+            consume(lookaheadToken);
+            result = param + Term();
+        }
+        else if (isMinus()) {
+            consume(lookaheadToken);
+            result = param - Term();
+        }
+
+        return Prod(result);
+    }
+
+    private float Exp() throws IOException, ParseError {
+
+        if (!isOpenParenthesis() && !isDigit())
+            throwError();
+
+        float term = Term();
+
+        return Prod(term);
+    }
+
+    public float eval() throws IOException, ParseError {
+        float result = Exp();
+
         if (!isEOF())
-            throw new ParseError();
-        return rv;
+            throwError();
+
+        return result;
     }
 
     public static void main(String[] args) {
