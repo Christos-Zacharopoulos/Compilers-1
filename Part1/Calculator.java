@@ -23,7 +23,7 @@ class Calculator {
     }
 
     private boolean isDigit(){
-        return (lookaheadToken > '0' || lookaheadToken < '9' );
+        return (lookaheadToken >= '0' && lookaheadToken <= '9' );
     }
 
     private boolean isOpenParenthesis(){
@@ -80,8 +80,8 @@ class Calculator {
 //            int int_res = evalDigit(lookaheadToken);
             result = (result * 10 )+ (float) evalDigit(lookaheadToken);
             consume(lookaheadToken);
-
         } while (isDigit());
+
         return result;
     }
 
