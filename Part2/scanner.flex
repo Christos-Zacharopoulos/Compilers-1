@@ -1,4 +1,4 @@
-/* JFlex example: part of Java language lexer specification */
+/* This file is the JFlex example from the K-31 examples and tutorials page */
 import java_cup.runtime.*;
 /**
 %%
@@ -57,22 +57,38 @@ LineTerminator = \r|\n|\r\n
 /* White space is a line terminator, space, tab, or line feed. */
 WhiteSpace     = {LineTerminator} | [ \t\f]
 
+/* An identifier is a string starting with a lowercase or uppercase letter
+ followed by zero or more lowercase or uppercase letters, numbers and _ */
+
+identifier = [a-zA-Z][a-zA-Z0-9_]*
+
+ /* A string is anything that starts with a double quote (") and ends with
+  a double quote (") but stays in the same line */
+
+/* string = \"[^\n\r]*\" */
+
 %state STRING
 
 %%
 /* ------------------------Lexical Rules Section---------------------- */
 
 <YYINITIAL> {
-/* operators */
  "+"            { return symbol(sym.PLUS); }
- "-"            { return symbol(sym.MINUS); }
- "*"            { return symbol(sym.TIMES); }
+ "="            { return symbol(sym.EQUAL); }
  "("            { return symbol(sym.LPAREN); }
  ")"            { return symbol(sym.RPAREN); }
- ";"            { return symbol(sym.SEMI); }
+ "{"            { return symbol(sym.LBRACK); }
+ "}"            { return symbol(sym.RBRACK); }
+ ","            { return symbol(sym.COMMA); }
+ "if"           { return symbol(sym.IF); }
+ "else"         { return symbol(sym.ELSE); }
+ "prefix"       { return symbol(sym.PREFIX); }
+ "reverse"      { return symbol(sym.REVERSE); }
  \"             { stringBuffer.setLength(0); yybegin(STRING); }
  {WhiteSpace}   { /* just skip what was found, do nothing */ }
 }
+
+{identifier} { return symbol(sym.IDENTIFIER, new String (yytext())); }
 
 <STRING> {
       \"                             { yybegin(YYINITIAL);
