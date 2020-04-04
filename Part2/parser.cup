@@ -1,18 +1,21 @@
-/**
- *  Package and Import Specifications
- */
 import java_cup.runtime.*;
+import java.io.*;
 
 /**
  *  Usercode Components
  */
+
+// Connect this parser to a scanner!
+
 parser code {:
-    // Connect this parser to a scanner!
     Scanner s;
-    Parser(Scanner s){ this.s=s; }
+    Parser(Scanner s) {
+	this.s = s;
+    }
 :}
 
 /* define how to connect to the scanner! */
+
 scan with {: return s.next_token(); :};
 
 /**
@@ -20,28 +23,215 @@ scan with {: return s.next_token(); :};
  */
 
 /* Terminals (tokens returned by the scanner). */
-terminal            SEMI, PLUS, MINUS, TIMES, LPAREN, RPAREN;
-terminal String     STRING_LITERAL;        // our scanner provides numbers as strings
+
+terminal            PLUS, LPAREN, RPAREN, RBRACK, LBRACK, IF, ELSE, COMMA, PREFIX, REVERSE;
+terminal String     IDENTIFIER, STRING_LITERAL;
 
 /*  Non terminals */
-non terminal            expr_list;
-non terminal Integer    expr;      // used to store evaluated subexpressions
 
-/**
- *  Precedence Declarations
- */
-precedence left PLUS, MINUS;
-precedence left TIMES;
+non terminal program;
+non terminal declarations;
+non terminal declaration;
+non terminal parameters;
 
-/**
- *  The Grammar Rules
- */
-expr_list ::= expr_list expr:e SEMI         {: System.out.println(e);         :}
-            | expr:e SEMI                   {: System.out.println(e);         :}
-;
-expr      ::= expr:e1 PLUS  expr:e2         {: RESULT = e1+e2;                :}
-             | expr:e1 MINUS expr:e2        {: RESULT = e1-e2;                :}
-             | expr:e1 TIMES expr:e2        {: RESULT = e1*e2;                :}
-             | LPAREN expr:e RPAREN	        {: RESULT = e;                    :}
-             | STRING_LITERAL:s	            {: RESULT = Integer.parseInt(s);  :}
-             ;
+non terminal calls;
+non terminal call;
+non terminal arguments;
+
+non terminal exprBlock;
+non terminal exprBlock1;
+
+non terminal ifCondition;
+non terminal condition;
+
+non terminal exprCall;
+non terminal exprCallArgs;
+non terminal rest;
+
+non terminal nothing;
+
+/* The Grammar Rules */
+
+program ::= declarations:declarations
+            {:
+//                File output = new File("Output.java");
+//                PrintStream toFile = new PrintStream(output);
+//                System.setOut(toFile);
+                System.out.println("public class Output {\n" + declarations + "\n}");
+            :};
+
+
+declarations ::= declaration:declaration declarations:rest
+            {:
+                RESULT =  declaration + "\n" + rest;
+            :}
+            |  calls:calls
+            {:
+                RESULT = "\n\tpublic static void main(String[] args) {\n" + calls + "\n\t}";
+            :}
+            | nothing
+            {:
+                RESULT = "\n\tpublic static void main(String[] args) {\n System.out.println(\"You have no calls.\"); \n}";
+            :};
+
+declaration ::= IDENTIFIER:name LPAREN parameters:params RPAREN LBRACK exprBlock:exprBlock RBRACK
+            {:
+                RESULT = "\tpublic static String " + name + "(" + params + ") {\n\t\t return " + exprBlock + ";\n\t}\n";
+            :}
+            |IDENTIFIER:name LPAREN RPAREN LBRACK exprBlock:exprBlock RBRACK
+            {:
+                RESULT = "\tpublic static String " + name + "() {\n\t\t return " + exprBlock + ";\n\t}\n";
+            :};
+
+parameters ::= parameters:rest COMMA IDENTIFIER:param
+            {:
+                RESULT = rest + "," + " String " + param;
+            :}
+            | IDENTIFIER:param
+            {:
+                RESULT = "String " + param;
+            :};
+
+calls ::= call:call calls:rest
+            {:
+                RESULT = "\t\tSystem.out.println(" + call + ");\n" + rest;
+            :}
+            | call:call
+            {:
+                RESULT = "\t\tSystem.out.println(" + call + ");";
+            :};
+
+call ::= IDENTIFIER:name LPAREN arguments:args RPAREN
+            {:
+                RESULT = name + "(" + args + ")";
+            :}
+            | IDENTIFIER:name LPAREN RPAREN
+            {:
+                RESULT = name + "()";
+            :};
+
+arguments ::= STRING_LITERAL:arg COMMA arguments:rest
+            {:
+                RESULT =  "\"" + arg + "\"" + "," +rest;
+            :}
+            | call:call COMMA arguments:rest
+            {:
+                RESULT = call + "," + rest;
+            :}
+            | ifCondition:ifCond COMMA arguments:rest
+            {:
+                RESULT = ifCond + ", (" + rest + ")";
+            :}
+            | STRING_LITERAL:arg
+            {:
+                RESULT = "\"" + arg + "\"";
+            :}
+            | call:call
+            {:
+                RESULT = call;
+            :}
+            | ifCondition:ifCond
+            {:
+                RESULT = "(" + ifCond + ")";
+            :}
+            | STRING_LITERAL:arg PLUS arguments:rest
+            {:
+                RESULT = "\"" + arg + "\"" + "+" + rest;
+            :}
+            | STRING_LITERAL:arg PLUS IDENTIFIER:rest
+            {:
+                RESULT = "\"" + arg + "\"" + "+" + rest;
+            :}
+            | IDENTIFIER:arg PLUS arguments:rest
+            {:
+                RESULT = arg + "+" + rest;
+            :}
+            | call:call PLUS arguments:args
+            {:
+                RESULT = call + "+" + args;
+            :};
+
+exprBlock ::= ifCondition:ifCond
+            {:
+                RESULT = ifCond + "\n";
+            :}
+            | exprBlock1:exprBlock1
+            {:
+                RESULT = exprBlock1;
+            :};
+
+ifCondition ::= IF LPAREN condition:condition RPAREN exprBlock:block1 ELSE exprBlock:block2
+            {:
+                RESULT = "((" +  condition + ") ? " + block1 + ":" + block2 + ")";
+            :};
+
+condition ::= exprBlock:block1 PREFIX exprBlock:block2
+            {:
+                RESULT =  "(" + block2 + ").startsWith(" + block1 + ")";
+            :};
+
+exprBlock1 ::= IDENTIFIER:id rest:rest
+            {:
+                RESULT = id + rest;
+            :}
+            | STRING_LITERAL:string rest:rest
+            {:
+                RESULT = "\"" + string + "\"" + rest;
+            :}
+            | exprCall:calls rest:rest
+            {:
+                RESULT = calls + "" + rest;
+            :}
+            | rest:rest
+            {:
+                RESULT = rest;
+            :};
+
+exprCall ::= IDENTIFIER:name LPAREN exprCallArgs:args RPAREN
+            {:
+                RESULT = name + "(" + args + ")";
+            :}
+            | call:call
+            {:
+                RESULT = call;
+            :};
+
+exprCallArgs ::= exprCallArgs:rest COMMA IDENTIFIER:arg
+            {:
+                RESULT = rest + "," + arg;
+            :}
+	        | IDENTIFIER:arg
+            {:
+                RESULT = arg;
+            :};
+
+rest ::= REVERSE IDENTIFIER:id exprBlock:rest
+            {:
+                RESULT = "new StringBuilder( " + id + " ).reverse().toString() " + rest;
+            :}
+            | REVERSE STRING_LITERAL:string exprBlock:rest
+            {:
+                RESULT = "new StringBuilder( \"" + string + "\" ).reverse().toString() " + rest;
+            :}
+            | REVERSE exprCall:calls exprBlock:rest
+            {:
+                RESULT = "new StringBuilder( " + calls + " ).reverse().toString() " + rest;
+            :}
+            | PLUS IDENTIFIER:id exprBlock:rest
+            {:
+                RESULT = "+" + id + rest;
+            :}
+            | PLUS STRING_LITERAL:string exprBlock:rest
+            {:
+                RESULT = "+" + "\"" + string + "\"" + rest;
+            :}
+            | PLUS exprCall:calls exprBlock:rest
+            {:
+                RESULT = "+" + calls + rest;
+            :}
+            | nothing
+            {:
+                RESULT = "";
+            :};
+
+nothing ::= ;

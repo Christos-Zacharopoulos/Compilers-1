@@ -1,0 +1,65 @@
+    print(line) {
+        line + " test concat"
+    }
+
+    shouldPrint(line) {
+        print(line + "Should Print" + line + " " + line)
+    }
+
+    findLangType(langName) {
+        if ("Java" prefix langName)
+            if(langName prefix "Java")
+                "Static"
+            else
+                if(reverse "script" prefix reverse langName)
+                    "Dynamic"
+                else
+                    "Unknown"
+        else
+            if (reverse "script" prefix reverse langName)
+                "Probably Dynamic"
+            else
+                reverse  name() + "Uknown"
+    }
+
+    name()  {
+        "John"
+    }
+
+    surname() {
+        "Doe"
+    }
+
+    fullname(first_name, sep, last_name) {
+        first_name + sep + last_name
+    }
+
+    repeat(x) {
+        x + x
+    }
+
+    cond_repeat(c, x) {
+        if (c prefix "yes")
+            if("yes" prefix c)
+                repeat(x)
+            else
+                x
+        else
+            x
+    }
+
+    print("---------1st test-------------")
+    shouldPrint(" John")
+    name()
+    surname()
+    fullname(name(), " ", surname())
+
+    print("---------2nd test-------------")
+    cond_repeat("yes", name())
+    cond_repeat("no", "Jane")
+
+    print("---------3rd test-------------")
+    findLangType("Java")
+    findLangType("Javascript")
+    findLangType(if(reverse "script" prefix reverse "Typescript") "Typescript" else "Python")
+    findLangType(if(reverse "script" prefix reverse "Python") "Typescript" else "Python")

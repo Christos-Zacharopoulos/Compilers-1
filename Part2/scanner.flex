@@ -60,47 +60,47 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 /* An identifier is a string starting with a lowercase or uppercase letter
  followed by zero or more lowercase or uppercase letters, numbers and _ */
 
-identifier = [a-zA-Z][a-zA-Z0-9_]*
+/* identifier = [a-zA-Z][a-zA-Z0-9_]* */
+
+Identifier = [:jletter:] [:jletterdigit:]*
 
  /* A string is anything that starts with a double quote (") and ends with
   a double quote (") but stays in the same line */
-
-/* string = \"[^\n\r]*\" */
 
 %state STRING
 
 %%
 /* ------------------------Lexical Rules Section---------------------- */
 
+ /* keywords */
+<YYINITIAL> "if"           { return symbol(sym.IF); }
+<YYINITIAL> "else"         { return symbol(sym.ELSE); }
+<YYINITIAL> "prefix"       { return symbol(sym.PREFIX); }
+<YYINITIAL> "reverse"      { return symbol(sym.REVERSE); }
+
 <YYINITIAL> {
+ {Identifier}   { return symbol(sym.IDENTIFIER, new String (yytext())); }
+ \"             { stringBuffer.setLength(0); yybegin(STRING); }
  "+"            { return symbol(sym.PLUS); }
- "="            { return symbol(sym.EQUAL); }
  "("            { return symbol(sym.LPAREN); }
  ")"            { return symbol(sym.RPAREN); }
  "{"            { return symbol(sym.LBRACK); }
  "}"            { return symbol(sym.RBRACK); }
  ","            { return symbol(sym.COMMA); }
- "if"           { return symbol(sym.IF); }
- "else"         { return symbol(sym.ELSE); }
- "prefix"       { return symbol(sym.PREFIX); }
- "reverse"      { return symbol(sym.REVERSE); }
- \"             { stringBuffer.setLength(0); yybegin(STRING); }
  {WhiteSpace}   { /* just skip what was found, do nothing */ }
 }
 
-{identifier} { return symbol(sym.IDENTIFIER, new String (yytext())); }
-
-<STRING> {
+ <STRING> {
       \"                             { yybegin(YYINITIAL);
-                                       return symbol(sym.STRING_LITERAL, stringBuffer.toString()); }
+                                       return symbol(sym.STRING_LITERAL,
+                                       stringBuffer.toString()); }
       [^\n\r\"\\]+                   { stringBuffer.append( yytext() ); }
       \\t                            { stringBuffer.append('\t'); }
       \\n                            { stringBuffer.append('\n'); }
-
       \\r                            { stringBuffer.append('\r'); }
       \\\"                           { stringBuffer.append('\"'); }
       \\                             { stringBuffer.append('\\'); }
-}
+    }
 
 /* No token was found for the input so through an error.  Print out an
    Illegal character message with the illegal character that was found. */
