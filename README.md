@@ -1,7 +1,7 @@
 # Compilers-1
 Compilers Project 1. 2020. DI , UOA
 
-##Exercise 1 
+## Exercise 1 
 
 For the first part of this homework you should implement a simple calculator. The calculator should accept expressions with the addition, subtraction, multiplication and division operators, as well as parentheses. The grammar (for multi-digit numbers) is summarized in:
 
@@ -23,7 +23,7 @@ You have to write a recursive descent parser in Java that reads expressions and 
 
 Your parser should read its input from the standard input (e.g. via an InputStream on System.in) and write the computed values of expressions to the standard output (System.out). Parse errors should be reported on standard error (System.err).
 
-##LL1 Grammar for Calculator.
+### LL1 Grammar for Calculator.
 
 The below grammar allows +, -, /, * with the correct priorities and also allows the use of parenthesis to change the priority.  
 
@@ -47,7 +47,7 @@ NUM -> DIGIT NUM | DIGIT
 DIGIT -> 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | e
 
 
-##Exercise 2
+## Exercise 2
 
 In the second part of this homework you will implement a parser and translator for a language supporting string operations. The language supports concatenation (+) and "reverse" operators over strings, function definitions and calls, conditionals (if-else i.e, every "if" must be followed by an "else"), and the following logical expression:
 
@@ -66,7 +66,7 @@ As with the first part of this assignment, you should accept input programs from
 
 To execute the program successfully, the "Main" class of your Java program must have a method with the following signature: public static void main(String[] args), which will be the main method of your program, containing all the translated statements of the input program. Moreover, for each function declaration of the input program, the translated Java program must contain an equivalent static method of the same name. Finally, keep in mind that in the input language the function declarations must precede all statements.
 
-Example #1
+### Example #1
 Input:
 
     name()  {
@@ -105,7 +105,7 @@ public class Main {
         return first_name + sep + last_name;
     }
 }
-Example #2
+### Example #2
 Input:
 
     name() {
@@ -128,7 +128,7 @@ Input:
 
     cond_repeat("yes", name())
     cond_repeat("no", "Jane")
-Example #3
+### Example #3
 Input:
 
     findLangType(langName) {
