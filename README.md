@@ -66,7 +66,7 @@ As with the first part of this assignment, you should accept input programs from
 
 To execute the program successfully, the "Main" class of your Java program must have a method with the following signature: public static void main(String[] args), which will be the main method of your program, containing all the translated statements of the input program. Moreover, for each function declaration of the input program, the translated Java program must contain an equivalent static method of the same name. Finally, keep in mind that in the input language the function declarations must precede all statements.
 
-Example #1
+### Example #1
 Input:
 
     name()  {
@@ -105,7 +105,7 @@ public class Main {
         return first_name + sep + last_name;
     }
 }
-Example #2
+### Example #2
 Input:
 
     name() {
@@ -128,7 +128,7 @@ Input:
 
     cond_repeat("yes", name())
     cond_repeat("no", "Jane")
-Example #3
+### Example #3
 Input:
 
     findLangType(langName) {
